@@ -16,5 +16,5 @@ export const generateText = async (query: string) => {
     const response = await page.$eval(textSelector, (el: any) => el.innerText);
     await browser.close();
 
-    return response;
+    return response as string;
 };

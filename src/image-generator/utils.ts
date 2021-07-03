@@ -38,32 +38,33 @@ export const loadModels = async () => {
 export const maskify = async (bodyUrl: string, geraltUrl: string) => {
     console.log(`Maskifying "${bodyUrl}" image, with "${geraltUrl}" mask`);
 
-    const canvasWidthBase = 600;
-    try {
-        const bodyImage = await canvasPkg.loadImage(bodyUrl);
-        const geraltImage = await canvasPkg.loadImage(geraltUrl);
+    const canvasWidthBase = 400;
+    const bodyImage = await canvasPkg.loadImage(bodyUrl);
+    const geraltImage = await canvasPkg.loadImage(geraltUrl);
 
-        const ratio = bodyImage.height / bodyImage.width;
-        const canvasWidth = ratio < 1 ? canvasWidthBase * 2 : canvasWidthBase;
-        const canvasHeight = Math.round(canvasWidth * ratio);
+    const ratio = bodyImage.height / bodyImage.width;
+    const canvasWidth = ratio < 1 ? canvasWidthBase * 2 : canvasWidthBase;
+    const canvasHeight = Math.round(canvasWidth * ratio);
 
-        const canvas = canvasPkg.createCanvas(canvasWidth, canvasHeight);
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(bodyImage, 0, 0, canvasWidth, canvasHeight);
+    const canvas = canvasPkg.createCanvas(canvasWidth, canvasHeight);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bodyImage, 0, 0, canvasWidth, canvasHeight);
 
-        const {
-            detection: { box },
-        } = await detectFace(canvas);
-        const { x, y, width } = box;
+    const {
+        detection: { box },
+    } = await detectFace(canvas);
+    const { x, y, width } = box;
 
-        const geraltWidth = width * 1.05;
-        const geraltHeight = (geraltImage.height / geraltImage.width) * geraltWidth;
-        const geraltX = x;
-        const geraltY = y - geraltHeight * 0.3;
-        ctx.drawImage(geraltImage, geraltX, geraltY, geraltWidth, geraltHeight);
+    const geraltWidth = width * 1.05;
+    const geraltHeight = (geraltImage.height / geraltImage.width) * geraltWidth;
+    const geraltX = x;
+    const geraltY = y - geraltHeight * 0.3;
+    ctx.drawImage(geraltImage, geraltX, geraltY, geraltWidth, geraltHeight);
 
-        return canvas.toBuffer('image/jpeg');
-    } catch (error) {
-        console.log(error);
+    const buffer = canvas.toBuffer('image/jpeg');
+    if (!buffer) {
+        throw new Error('Could not create image buffer');
     }
+
+    return buffer;
 };
