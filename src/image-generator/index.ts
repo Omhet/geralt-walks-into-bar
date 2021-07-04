@@ -8,14 +8,9 @@ const { Canvas, Image, ImageData } = canvasPkg;
 // @ts-ignore
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 
-export async function generateImage() {
-    console.log('Generating image...');
-
-    const bodyImageCounter = new ImageCounter(bodyUrls, 'body');
-    const maskImageCounter = new ImageCounter(maskUrls, 'mask');
-    const bodyUrl = bodyImageCounter.getNextImageUrl();
-    const geraltUrl = maskImageCounter.getNextImageUrl();
-
-    await loadModels();
-    return maskify(bodyUrl, geraltUrl);
+export async function generateImage(bodyUrl: string, maskUrl: string, shouldLoadModels = true) {
+    if (shouldLoadModels) {
+        await loadModels();
+    }
+    return maskify(bodyUrl, maskUrl);
 }

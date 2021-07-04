@@ -1,12 +1,9 @@
-import { generateImage } from './image-generator';
 import { sendToTelegram } from './social/tg';
-import { generateText } from './text-generator';
+import { getModeratedContent } from './moderation-bot/moderation-bot';
 
 (async () => {
     try {
-        const text = await generateText();
-        const imageBuffer = await generateImage();
-
+        const { text, imageBuffer } = await getModeratedContent();
         await sendToTelegram(imageBuffer, text);
     } catch (error) {
         console.log(error);

@@ -18,7 +18,7 @@ export const detectFace = async (image: any) => {
 
     const score = detection.detection.score;
     console.log(`Score: ${score}`);
-    if (score < 0.85) throw new Error('Non confident about face');
+    if (score < 0.75) throw new Error('Non confident about face');
 
     return detection;
 };

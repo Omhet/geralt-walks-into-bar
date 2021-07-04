@@ -20,12 +20,17 @@ export class ImageCounter {
 
     getNextImageUrl() {
         let counter = this.getCounter();
-        counter = counter > this.imageUrls.length - 1 ? 0 : counter;
 
         const url = this.imageUrls[counter++];
 
+        counter = counter > this.imageUrls.length - 1 ? 0 : counter;
         this.setCounter(counter);
 
         return url;
+    }
+
+    getCurrentImageUrl() {
+        let counter = this.getCounter();
+        return this.imageUrls[counter];
     }
 }
