@@ -4,7 +4,9 @@ import config from '../config';
 const textSelector = config.TEXT_SELECTOR!;
 const url = config.GENERATE_TEXT_SERVICE!;
 
-export const generateText = async (query: string) => {
+const query = 'Геральт заходит в бар.';
+
+export const generateText = async () => {
     const browser = await chromium.launch();
     const page = await browser.newPage();
     await page.goto(url);

@@ -2,11 +2,9 @@ import { generateImage } from './image-generator';
 import { sendToTelegram } from './social/tg';
 import { generateText } from './text-generator';
 
-const query = 'Геральт заходит в бар.';
-
 (async () => {
     try {
-        const text = await generateText(query);
+        const text = await generateText();
         const imageBuffer = await generateImage();
 
         await sendToTelegram(imageBuffer, text);
