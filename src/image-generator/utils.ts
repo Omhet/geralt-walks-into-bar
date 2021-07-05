@@ -16,10 +16,6 @@ export const detectFace = async (image: any) => {
         throw new Error('Could not detect face');
     }
 
-    const score = detection.detection.score;
-    console.log(`Score: ${score}`);
-    if (score < 0.75) throw new Error('Non confident about face');
-
     return detection;
 };
 
@@ -35,12 +31,12 @@ export const loadModels = async () => {
     console.log('models loaded');
 };
 
-export const maskify = async (bodyUrl: string, geraltUrl: string) => {
-    console.log(`Maskifying "${bodyUrl}" image, with "${geraltUrl}" mask`);
+export const maskify = async (bodyUrl: string, maskUrl: string, flipMask = false) => {
+    console.log(`Maskifying "${bodyUrl}" image, with "${maskUrl}" mask`);
 
     const canvasWidthBase = 400;
     const bodyImage = await canvasPkg.loadImage(bodyUrl);
-    const geraltImage = await canvasPkg.loadImage(geraltUrl);
+    const maskImage = await canvasPkg.loadImage(maskUrl);
 
     const ratio = bodyImage.height / bodyImage.width;
     const canvasWidth = ratio < 1 ? canvasWidthBase * 2 : canvasWidthBase;
@@ -55,11 +51,15 @@ export const maskify = async (bodyUrl: string, geraltUrl: string) => {
     } = await detectFace(canvas);
     const { x, y, width } = box;
 
-    const geraltWidth = width * 1.05;
-    const geraltHeight = (geraltImage.height / geraltImage.width) * geraltWidth;
-    const geraltX = x;
-    const geraltY = y - geraltHeight * 0.3;
-    ctx.drawImage(geraltImage, geraltX, geraltY, geraltWidth, geraltHeight);
+    const maskWidth = width * 1.05;
+    const maskHeight = (maskImage.height / maskImage.width) * maskWidth;
+    const maskX = x;
+    const maskY = y - maskHeight * 0.3;
+    const halfMaskWidth = maskWidth / 2;
+    const halfMaskHeight = maskHeight / 2;
+    ctx.translate(maskX + halfMaskWidth, maskY + halfMaskHeight);
+    if (flipMask) ctx.scale(-1, 1);
+    ctx.drawImage(maskImage, -halfMaskWidth, -halfMaskHeight, maskWidth, maskHeight);
 
     const buffer = canvas.toBuffer('image/jpeg');
     if (!buffer) {

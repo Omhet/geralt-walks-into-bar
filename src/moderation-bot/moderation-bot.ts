@@ -12,18 +12,13 @@ const maskImageCounter = new ImageCounter(maskUrls, 'mask');
 
 export const getModeratedContent = async (): Promise<Content> => {
     return new Promise(async (resolve, reject) => {
+        const bot = new Telegraf(config.MODERATION_TG_BOT_TOKEN!);
+        console.log('Moderation bot started');
+        await bot.launch();
         try {
-            const bot = new Telegraf(config.MODERATION_TG_BOT_TOKEN!);
-            console.log('Moderation bot started');
-            await bot.launch();
-
-            console.log('Generating text');
-            let text = await generateText();
-            console.log('Text generated');
-
-            console.log('Generating image');
-            let imageBuffer = await getNextImage({ isFirstTime: true });
-            console.log('Image generated');
+            let text = await getNextText();
+            let imageBuffer = await getNextImage({ nextBody: true, isFirstTime: true });
+            let flipMask = false;
 
             await sendContentToModeration(bot, imageBuffer, text);
 
@@ -34,31 +29,45 @@ export const getModeratedContent = async (): Promise<Content> => {
                 resolve({ text, imageBuffer });
             });
             bot.hears(ModerationKeyboard.NextBody, async () => {
-                console.log('Generating image');
-                imageBuffer = await getNextImage({ nextBody: true, nextMask: false });
-                console.log('Next body image generated');
+                imageBuffer = await getNextImage({ nextBody: true });
                 await sendContentToModeration(bot, imageBuffer, text);
             });
             bot.hears(ModerationKeyboard.NextMask, async () => {
-                console.log('Generating image');
-                imageBuffer = await getNextImage({ nextBody: false, nextMask: true });
-                console.log('Next mask image generated');
+                imageBuffer = await getNextImage({ nextMask: true });
+                await sendContentToModeration(bot, imageBuffer, text);
+            });
+            bot.hears(ModerationKeyboard.FlipMask, async () => {
+                flipMask = !flipMask;
+                imageBuffer = await getNextImage({ flipMask });
                 await sendContentToModeration(bot, imageBuffer, text);
             });
             bot.hears(ModerationKeyboard.NextText, async () => {
-                console.log('Generating text');
-                text = await generateText();
-                console.log('Next text generated');
+                text = await getNextText();
                 await sendContentToModeration(bot, imageBuffer, text);
             });
+            bot.catch(async (error: any) => {
+                console.log(error);
+                await sendFinishMessageToModeration(bot, `Ошибка:\n${error.message}`);
+            });
         } catch (error) {
-            reject(error);
+            console.log(error);
+            await sendFinishMessageToModeration(bot, `Ошибка:\n${error.message}`);
         }
     });
 };
 
-const getNextImage = async ({ nextBody = true, nextMask = true, isFirstTime = false } = {}) => {
+const getNextImage = async ({ nextBody = false, nextMask = false, isFirstTime = false, flipMask = false } = {}) => {
+    console.log('Generating image');
     const bodyUrl = nextBody ? bodyImageCounter.getNextImageUrl() : bodyImageCounter.getCurrentImageUrl();
     const maskUrl = nextMask ? maskImageCounter.getNextImageUrl() : maskImageCounter.getCurrentImageUrl();
-    return await generateImage(bodyUrl, maskUrl, isFirstTime);
+    const image = await generateImage(bodyUrl, maskUrl, { shouldLoadModels: isFirstTime, flipMask });
+    console.log('Image generated');
+    return image;
+};
+
+const getNextText = async () => {
+    console.log('Generating text');
+    const text = await generateText();
+    console.log('Next text generated');
+    return text;
 };

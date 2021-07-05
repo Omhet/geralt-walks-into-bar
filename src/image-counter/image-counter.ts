@@ -20,10 +20,12 @@ export class ImageCounter {
 
     getNextImageUrl() {
         let counter = this.getCounter();
+        const length = this.imageUrls.length - 1;
 
+        counter = clamp(counter, length);
         const url = this.imageUrls[counter++];
+        counter = clamp(counter, length);
 
-        counter = counter > this.imageUrls.length - 1 ? 0 : counter;
         this.setCounter(counter);
 
         return url;
@@ -31,6 +33,9 @@ export class ImageCounter {
 
     getCurrentImageUrl() {
         let counter = this.getCounter();
+        counter = counter === 0 ? counter : counter - 1;
         return this.imageUrls[counter];
     }
 }
+
+const clamp = (number: number, max: number) => (number > max ? 0 : number);
