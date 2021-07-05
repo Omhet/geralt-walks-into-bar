@@ -9,6 +9,7 @@ import { ModerationKeyboard, sendContentToModeration, sendFinishMessageToModerat
 
 const bodyImageCounter = new ImageCounter(bodyUrls, 'body');
 const maskImageCounter = new ImageCounter(maskUrls, 'mask');
+let flipMask = false;
 
 export const getModeratedContent = async (): Promise<Content> => {
     return new Promise(async (resolve, reject) => {
@@ -17,10 +18,15 @@ export const getModeratedContent = async (): Promise<Content> => {
         await bot.launch();
         try {
             let text = await getNextText();
-            let imageBuffer = await getNextImage({ nextBody: true, isFirstTime: true });
-            let flipMask = false;
+            let imageBuffer = await getNextImage({ nextBody: true, isFirstTime: true, flipMask });
 
-            await sendContentToModeration(bot, imageBuffer, text);
+            const sendToModeration = () =>
+                sendContentToModeration(bot, imageBuffer, text, {
+                    bodyImageCounter,
+                    maskImageCounter,
+                });
+
+            await sendToModeration();
 
             bot.hears(ModerationKeyboard.Ok, async () => {
                 console.log('Moderation approved');
@@ -29,21 +35,21 @@ export const getModeratedContent = async (): Promise<Content> => {
                 resolve({ text, imageBuffer });
             });
             bot.hears(ModerationKeyboard.NextBody, async () => {
-                imageBuffer = await getNextImage({ nextBody: true });
-                await sendContentToModeration(bot, imageBuffer, text);
+                imageBuffer = await getNextImage({ nextBody: true, flipMask });
+                await sendToModeration();
             });
             bot.hears(ModerationKeyboard.NextMask, async () => {
-                imageBuffer = await getNextImage({ nextMask: true });
-                await sendContentToModeration(bot, imageBuffer, text);
+                imageBuffer = await getNextImage({ nextMask: true, flipMask });
+                await sendToModeration();
             });
             bot.hears(ModerationKeyboard.FlipMask, async () => {
                 flipMask = !flipMask;
                 imageBuffer = await getNextImage({ flipMask });
-                await sendContentToModeration(bot, imageBuffer, text);
+                await sendToModeration();
             });
             bot.hears(ModerationKeyboard.NextText, async () => {
                 text = await getNextText();
-                await sendContentToModeration(bot, imageBuffer, text);
+                await sendToModeration();
             });
             bot.catch(async (error: any) => {
                 console.log(error);

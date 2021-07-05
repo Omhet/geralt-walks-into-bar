@@ -1,5 +1,6 @@
 import { Telegraf } from 'telegraf';
 import config from '../config';
+import { ImageCounter } from '../image-counter/image-counter';
 
 export enum ModerationKeyboard {
     Ok = 'Одобряю',
@@ -9,13 +10,26 @@ export enum ModerationKeyboard {
     NextText = 'Другой текст',
 }
 
-export const sendContentToModeration = async (bot: Telegraf, imageBuffer: Buffer, text: string) => {
+export const sendContentToModeration = async (
+    bot: Telegraf,
+    imageBuffer: Buffer,
+    text: string,
+    { bodyImageCounter, maskImageCounter }: { bodyImageCounter: ImageCounter; maskImageCounter: ImageCounter }
+) => {
     await bot.telegram.sendPhoto(
         config.MODERATION_TG_CHANNEL_ID!,
         { source: imageBuffer },
-        { caption: text, parse_mode: 'HTML', reply_markup: { keyboard: getKeyboard() } }
+        {
+            caption: `${text}\n\n Тело: ${getCounterMessage(bodyImageCounter)}\nМаска: ${getCounterMessage(
+                maskImageCounter
+            )}`,
+            parse_mode: 'HTML',
+            reply_markup: { keyboard: getKeyboard() },
+        }
     );
 };
+
+const getCounterMessage = (counter: ImageCounter) => `${counter.getCounter() + 1} из ${counter.getImagesLength()}`;
 
 export const sendFinishMessageToModeration = async (bot: Telegraf, text = 'Закончили') => {
     await bot.telegram.sendMessage(config.MODERATION_TG_CHANNEL_ID!, text, {

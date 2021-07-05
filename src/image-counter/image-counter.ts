@@ -18,9 +18,13 @@ export class ImageCounter {
         this.storage.setItem('counter', String(number));
     }
 
+    getImagesLength() {
+        return this.imageUrls.length;
+    }
+
     getNextImageUrl() {
         let counter = this.getCounter();
-        const length = this.imageUrls.length - 1;
+        const length = this.getImagesLength() - 1;
 
         counter = clamp(counter, length);
         const url = this.imageUrls[counter++];
