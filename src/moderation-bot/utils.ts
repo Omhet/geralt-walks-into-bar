@@ -21,7 +21,8 @@ export const sendContentToModeration = async (
         { source: imageBuffer },
         {
             caption: `${text}\n\n Тело: ${getCounterMessage(bodyImageCounter)}\nМаска: ${getCounterMessage(
-                maskImageCounter
+                maskImageCounter,
+                true
             )}`,
             parse_mode: 'HTML',
             reply_markup: { keyboard: getKeyboard() },
@@ -29,7 +30,8 @@ export const sendContentToModeration = async (
     );
 };
 
-const getCounterMessage = (counter: ImageCounter) => `${counter.getCounter() + 1} из ${counter.getImagesLength()}`;
+const getCounterMessage = (counter: ImageCounter, add = false) =>
+    `${counter.getCounter() + (add ? 1 : 0)} из ${counter.getImagesLength()}`;
 
 export const sendFinishMessageToModeration = async (bot: Telegraf, text = 'Закончили') => {
     await bot.telegram.sendMessage(config.MODERATION_TG_CHANNEL_ID!, text, {
