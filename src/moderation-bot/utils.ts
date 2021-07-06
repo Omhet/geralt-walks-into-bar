@@ -10,6 +10,13 @@ export enum ModerationKeyboard {
     NextText = 'Другой текст',
 }
 
+export enum MaskShiftKeyboard {
+    Up = '⬆️',
+    Down = '⬇️',
+    Right = '➡️',
+    Left = '⬅️',
+}
+
 export const sendContentToModeration = async (
     bot: Telegraf,
     imageBuffer: Buffer,
@@ -25,7 +32,7 @@ export const sendContentToModeration = async (
                 true
             )}`,
             parse_mode: 'HTML',
-            reply_markup: { keyboard: getKeyboard() },
+            reply_markup: { keyboard: getModerationKeyboard() },
         }
     );
 };
@@ -40,6 +47,33 @@ export const sendFinishMessageToModeration = async (bot: Telegraf, text = 'За�
     });
 };
 
-const getKeyboard = () => Object.values(ModerationKeyboard).map((key) => getKey(key));
+const getModerationKeyboard = () => [
+    ...getKeyboardInRow(Object.values(ModerationKeyboard)),
+    getKeyboard(Object.values(MaskShiftKeyboard)),
+];
 
-const getKey = (text: string) => [{ text, callback_data: text }];
+const getKeyboardInRow = (arr: string[]) => arr.map((key) => getKeyInRow(key));
+const getKeyboard = (arr: string[]) => arr.map((key) => getKey(key));
+
+const getKeyInRow = (text: string) => [getKey(text)];
+const getKey = (text: string) => ({ text, callback_data: text });
+
+export const maskShiftKeyToShiftAmount = (key: MaskShiftKeyboard, maskShift: { x: number; y: number }) => {
+    const shiftAmount = 5;
+    switch (key) {
+        case MaskShiftKeyboard.Up:
+            maskShift.y -= shiftAmount;
+            break;
+        case MaskShiftKeyboard.Down:
+            maskShift.y += shiftAmount;
+            break;
+        case MaskShiftKeyboard.Right:
+            maskShift.x += shiftAmount;
+            break;
+        case MaskShiftKeyboard.Left:
+            maskShift.x -= shiftAmount;
+            break;
+    }
+
+    return maskShift;
+};

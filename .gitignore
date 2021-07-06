@@ -4,4 +4,4 @@ dist
 .env
 src/image-counter/body/
 src/image-counter/mask/
-src/test.jpg
+src/test-output/
