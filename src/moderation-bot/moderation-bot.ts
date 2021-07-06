@@ -1,4 +1,4 @@
-import { Telegraf } from 'telegraf';
+import { Context, Telegraf } from 'telegraf';
 import config from '../config';
 import { bodyUrls, maskUrls } from '../data';
 import { ImageCounter } from '../image-counter/image-counter';
@@ -15,14 +15,20 @@ import {
 
 const bodyImageCounter = new ImageCounter(bodyUrls, 'body');
 const maskImageCounter = new ImageCounter(maskUrls, 'mask');
+
+const phraseSet = 'Фраза: ';
+const startPhrase = 'Геральт заходит в бар.';
+let continuePhrase = '';
+
 let flipMask = false;
 let maskShift = { x: 0, y: 0 };
 
 export const getModeratedContent = async (): Promise<Content> => {
     return new Promise(async (resolve) => {
         const bot = new Telegraf(config.MODERATION_TG_BOT_TOKEN!);
-        console.log('Moderation bot started');
         await bot.launch();
+        console.log('Moderation bot started');
+
         try {
             let text = await getNextText();
             let imageBuffer = await getNextImage({ nextBody: true, isFirstTime: true });
@@ -67,6 +73,15 @@ export const getModeratedContent = async (): Promise<Content> => {
                 text = await getNextText();
                 await sendToModeration();
             });
+            bot.on('text', async (ctx) => {
+                const messageText = ctx.message.text;
+                if (messageText.startsWith(phraseSet)) {
+                    continuePhrase = messageText.replace(phraseSet, '');
+                    text = await getNextText();
+                    await sendToModeration();
+                    ctx.state.action = '';
+                }
+            });
             bot.catch(async (error: any) => {
                 console.log(error);
                 await sendFinishMessageToModeration(bot, `Ошибка:\n${error.message}`);
@@ -94,7 +109,8 @@ const getNextImage = async ({
 
 const getNextText = async () => {
     console.log('Generating text');
-    const text = await generateText();
+    const query = `${startPhrase}${continuePhrase}`;
+    const text = await generateText(query);
     console.log('Next text generated');
     return text;
 };

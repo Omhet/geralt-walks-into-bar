@@ -4,10 +4,10 @@ import { ImageCounter } from '../image-counter/image-counter';
 
 export enum ModerationKeyboard {
     Ok = 'Одобряю',
+    NextText = 'Другой текст',
     NextBody = 'Другое тело',
     NextMask = 'Другая маска',
     FlipMask = 'Отразить маску',
-    NextText = 'Другой текст',
 }
 
 export enum MaskShiftKeyboard {
