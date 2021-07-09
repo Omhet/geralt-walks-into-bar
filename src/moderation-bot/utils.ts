@@ -5,6 +5,7 @@ import { ImageCounter } from '../image-counter/image-counter';
 export enum ModerationKeyboard {
     Ok = 'Одобряю',
     NextText = 'Другой текст',
+    LoopText = 'Зациклить текст',
     NextBody = 'Другое тело',
     NextMask = 'Другая маска',
     FlipMask = 'Отразить маску',
@@ -32,11 +33,13 @@ export const sendContentToModeration = async (
         config.MODERATION_TG_CHANNEL_ID!,
         { source: imageBuffer },
         {
-            caption: `${text}\n\n Тело: ${getCounterMessage(bodyImageCounter)}`,
+            caption: text,
             parse_mode: 'HTML',
             reply_markup: { keyboard: getModerationKeyboard() },
         }
     );
+
+    await sendFinishMessageToModeration(bot, `\n\n Тело: ${getCounterMessage(bodyImageCounter)}`);
 };
 
 const getCounterMessage = (counter: ImageCounter) => `${counter.getCounter()} из ${counter.getImagesLength()}`;
@@ -93,3 +96,5 @@ export const maskScaleKeyToScaleAmount = (key: MaskScaleKeyboard, maskScale: num
 
     return maskScale;
 };
+
+export const wait = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay));

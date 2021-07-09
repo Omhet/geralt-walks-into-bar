@@ -13,6 +13,7 @@ import {
     maskShiftKeyToShiftAmount,
     MaskScaleKeyboard,
     maskScaleKeyToScaleAmount,
+    wait,
 } from './utils';
 
 const bodyImageCounter = new ImageCounter(bodyUrls, 'body');
@@ -80,6 +81,10 @@ export const getModeratedContent = async (): Promise<Content> => {
                 text = await getNextText();
                 await sendToModeration();
             });
+            bot.hears(ModerationKeyboard.LoopText, async () => {
+                text = await getNextText(text);
+                await sendToModeration();
+            });
             bot.on('text', async (ctx) => {
                 const messageText = ctx.message.text;
                 if (messageText.startsWith(phraseSet)) {
@@ -114,7 +119,7 @@ const getNextImage = async ({ nextBody = false, nextMask = false, isFirstTime = 
         maskIndex++;
     }
     maskIndex = maskIndex % maskUrls.length;
-    console.log({ nextBody, nextMask, maskShift, maskScale, maskIndex });
+    console.log({ nextBody, nextMask, flipMask, maskShift, maskScale, maskIndex });
 
     const bodyUrl = bodyImageCounter.getCurrentImageUrl();
     const maskUrl = maskUrls[maskIndex];
@@ -128,9 +133,9 @@ const getNextImage = async ({ nextBody = false, nextMask = false, isFirstTime = 
     return image;
 };
 
-const getNextText = async () => {
+const getNextText = async (startQuery?: string) => {
     console.log('Generating text');
-    const query = `${startPhrase}${continuePhrase}`;
+    const query = startQuery ?? `${startPhrase}${continuePhrase}`;
     const text = await generateText(query);
     console.log('Next text generated');
     return text;
