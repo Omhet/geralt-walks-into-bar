@@ -11,17 +11,20 @@ import {
     sendFinishMessageToModeration,
     MaskShiftKeyboard,
     maskShiftKeyToShiftAmount,
+    MaskScaleKeyboard,
+    maskScaleKeyToScaleAmount,
 } from './utils';
 
 const bodyImageCounter = new ImageCounter(bodyUrls, 'body');
-const maskImageCounter = new ImageCounter(maskUrls, 'mask');
 
 const phraseSet = 'Фраза: ';
 const startPhrase = 'Геральт заходит в бар.';
 let continuePhrase = '';
 
+let maskIndex = 0;
 let flipMask = false;
 let maskShift = { x: 0, y: 0 };
+let maskScale = 1;
 
 export const getModeratedContent = async (): Promise<Content> => {
     return new Promise(async (resolve) => {
@@ -31,12 +34,11 @@ export const getModeratedContent = async (): Promise<Content> => {
 
         try {
             let text = await getNextText();
-            let imageBuffer = await getNextImage({ nextBody: true, isFirstTime: true });
+            let imageBuffer = await getNextImage({ isFirstTime: true });
 
             const sendToModeration = () =>
                 sendContentToModeration(bot, imageBuffer, text, {
                     bodyImageCounter,
-                    maskImageCounter,
                 });
 
             await sendToModeration();
@@ -48,24 +50,29 @@ export const getModeratedContent = async (): Promise<Content> => {
                 resolve({ text, imageBuffer });
             });
             bot.hears(ModerationKeyboard.NextBody, async () => {
-                maskShift = getShiftReset();
                 imageBuffer = await getNextImage({ nextBody: true });
                 await sendToModeration();
             });
             bot.hears(ModerationKeyboard.NextMask, async () => {
-                maskShift = getShiftReset();
                 imageBuffer = await getNextImage({ nextMask: true });
                 await sendToModeration();
             });
             bot.hears(ModerationKeyboard.FlipMask, async () => {
                 flipMask = !flipMask;
-                imageBuffer = await getNextImage({ maskShift });
+                imageBuffer = await getNextImage();
                 await sendToModeration();
             });
             Object.values(MaskShiftKeyboard).forEach((key) => {
                 bot.hears(key, async () => {
                     maskShift = maskShiftKeyToShiftAmount(key, maskShift);
-                    imageBuffer = await getNextImage({ maskShift });
+                    imageBuffer = await getNextImage();
+                    await sendToModeration();
+                });
+            });
+            Object.values(MaskScaleKeyboard).forEach((key) => {
+                bot.hears(key, async () => {
+                    maskScale = maskScaleKeyToScaleAmount(key, maskScale);
+                    imageBuffer = await getNextImage();
                     await sendToModeration();
                 });
             });
@@ -93,16 +100,30 @@ export const getModeratedContent = async (): Promise<Content> => {
     });
 };
 
-const getNextImage = async ({
-    nextBody = false,
-    nextMask = false,
-    isFirstTime = false,
-    maskShift = { x: 0, y: 0 },
-} = {}) => {
+const getNextImage = async ({ nextBody = false, nextMask = false, isFirstTime = false } = {}) => {
     console.log('Generating image');
-    const bodyUrl = nextBody ? bodyImageCounter.getNextImageUrl() : bodyImageCounter.getCurrentImageUrl();
-    const maskUrl = nextMask ? maskImageCounter.getNextImageUrl() : maskImageCounter.getCurrentImageUrl();
-    const image = await generateImage(bodyUrl, maskUrl, { shouldLoadModels: isFirstTime, flipMask, maskShift });
+
+    if (nextMask || nextBody) {
+        maskShift = getShiftReset();
+        maskScale = 1;
+    }
+    if (nextBody) {
+        bodyImageCounter.increaseCounter();
+    }
+    if (nextMask) {
+        maskIndex++;
+    }
+    maskIndex = maskIndex % maskUrls.length;
+    console.log({ nextBody, nextMask, maskShift, maskScale, maskIndex });
+
+    const bodyUrl = bodyImageCounter.getCurrentImageUrl();
+    const maskUrl = maskUrls[maskIndex];
+    const image = await generateImage(bodyUrl, maskUrl, {
+        shouldLoadModels: isFirstTime,
+        flipMask,
+        maskShift,
+        maskScale,
+    });
     console.log('Image generated');
     return image;
 };

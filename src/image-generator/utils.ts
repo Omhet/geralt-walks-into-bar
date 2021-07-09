@@ -31,7 +31,11 @@ export const loadModels = async () => {
     console.log('models loaded');
 };
 
-export const maskify = async (bodyUrl: string, maskUrl: string, { flipMask = false, maskShift = { x: 0, y: 0 } }) => {
+export const maskify = async (
+    bodyUrl: string,
+    maskUrl: string,
+    { flipMask = false, maskShift = { x: 0, y: 0 }, maskScale = 1 }
+) => {
     console.log(`Maskifying "${bodyUrl}" image, with "${maskUrl}" mask`);
 
     const canvasWidthBase = 400;
@@ -51,7 +55,7 @@ export const maskify = async (bodyUrl: string, maskUrl: string, { flipMask = fal
     } = await detectFace(canvas);
     const { x, y, width } = box;
 
-    const maskWidth = width * 1.05;
+    const maskWidth = width * 1.05 * maskScale;
     const maskHeight = (maskImage.height / maskImage.width) * maskWidth;
     const maskX = x + getPercent(maskShift.x, maskWidth);
     const maskY = y - maskHeight * 0.3 + getPercent(maskShift.y, maskHeight);

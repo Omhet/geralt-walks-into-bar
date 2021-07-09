@@ -17,28 +17,29 @@ export enum MaskShiftKeyboard {
     Left = '⬅️',
 }
 
+export enum MaskScaleKeyboard {
+    More = '+',
+    Less = '-',
+}
+
 export const sendContentToModeration = async (
     bot: Telegraf,
     imageBuffer: Buffer,
     text: string,
-    { bodyImageCounter, maskImageCounter }: { bodyImageCounter: ImageCounter; maskImageCounter: ImageCounter }
+    { bodyImageCounter }: { bodyImageCounter: ImageCounter }
 ) => {
     await bot.telegram.sendPhoto(
         config.MODERATION_TG_CHANNEL_ID!,
         { source: imageBuffer },
         {
-            caption: `${text}\n\n Тело: ${getCounterMessage(bodyImageCounter)}\nМаска: ${getCounterMessage(
-                maskImageCounter,
-                true
-            )}`,
+            caption: `${text}\n\n Тело: ${getCounterMessage(bodyImageCounter)}`,
             parse_mode: 'HTML',
             reply_markup: { keyboard: getModerationKeyboard() },
         }
     );
 };
 
-const getCounterMessage = (counter: ImageCounter, add = false) =>
-    `${counter.getCounter() + (add ? 1 : 0)} из ${counter.getImagesLength()}`;
+const getCounterMessage = (counter: ImageCounter) => `${counter.getCounter()} из ${counter.getImagesLength()}`;
 
 export const sendFinishMessageToModeration = async (bot: Telegraf, text = 'Закончили') => {
     await bot.telegram.sendMessage(config.MODERATION_TG_CHANNEL_ID!, text, {
@@ -50,6 +51,7 @@ export const sendFinishMessageToModeration = async (bot: Telegraf, text = 'За�
 const getModerationKeyboard = () => [
     ...getKeyboardInRow(Object.values(ModerationKeyboard)),
     getKeyboard(Object.values(MaskShiftKeyboard)),
+    getKeyboard(Object.values(MaskScaleKeyboard)),
 ];
 
 const getKeyboardInRow = (arr: string[]) => arr.map((key) => getKeyInRow(key));
@@ -76,4 +78,18 @@ export const maskShiftKeyToShiftAmount = (key: MaskShiftKeyboard, maskShift: { x
     }
 
     return maskShift;
+};
+
+export const maskScaleKeyToScaleAmount = (key: MaskScaleKeyboard, maskScale: number) => {
+    const shiftAmount = 0.05;
+    switch (key) {
+        case MaskScaleKeyboard.More:
+            maskScale += shiftAmount;
+            break;
+        case MaskScaleKeyboard.Less:
+            maskScale -= shiftAmount;
+            break;
+    }
+
+    return maskScale;
 };

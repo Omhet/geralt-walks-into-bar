@@ -9,10 +9,10 @@ faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 export async function generateImage(
     bodyUrl: string,
     maskUrl: string,
-    { shouldLoadModels = true, flipMask = false, maskShift = { x: 0, y: 0 } } = {}
+    { shouldLoadModels = true, flipMask = false, maskShift = { x: 0, y: 0 }, maskScale = 1 } = {}
 ) {
     if (shouldLoadModels) {
         await loadModels();
     }
-    return maskify(bodyUrl, maskUrl, { flipMask, maskShift });
+    return maskify(bodyUrl, maskUrl, { flipMask, maskShift, maskScale });
 }

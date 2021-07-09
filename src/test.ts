@@ -11,7 +11,9 @@ import path from 'path';
     const maskUrl = maskImageCounter.getCurrentImageUrl();
     const image = await generateImage(bodyUrl, maskUrl, {
         shouldLoadModels: true,
-        flipMask: false,
+        flipMask: true,
+        maskScale: 0.95,
+        maskShift: { y: -5, x: 0 },
     });
     fs.writeFileSync(path.join(__dirname, './test-output/test.jpg'), image);
 })();

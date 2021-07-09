@@ -22,22 +22,15 @@ export class ImageCounter {
         return this.imageUrls.length;
     }
 
-    getNextImageUrl() {
+    increaseCounter() {
         let counter = this.getCounter();
         const length = this.getImagesLength() - 1;
-
-        counter = clamp(counter, length);
-        const url = this.imageUrls[counter++];
-        counter = clamp(counter, length);
-
+        counter = clamp(++counter, length);
         this.setCounter(counter);
-
-        return url;
     }
 
     getCurrentImageUrl() {
         let counter = this.getCounter();
-        counter = counter === 0 ? counter : counter - 1;
         return this.imageUrls[counter];
     }
 }
