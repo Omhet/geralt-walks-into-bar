@@ -34,7 +34,8 @@ export const getModeratedContent = async (): Promise<Content> => {
         console.log('Moderation bot started');
 
         try {
-            let text = await getNextText();
+            // let text = await getNextText();
+            let text = 'dd';
             let imageBuffer = await getNextImage({ isFirstTime: true });
 
             const sendToModeration = () =>
