@@ -1,11 +1,11 @@
-import { chromium } from 'playwright';
+import { chromium } from 'playwright-chromium';
 import config from '../config';
 
 const textSelector = config.TEXT_SELECTOR!;
 const url = config.GENERATE_TEXT_SERVICE!;
 
 export const generateText = async (query: string) => {
-    const browser = await chromium.launch();
+    const browser = await chromium.launch({ chromiumSandbox: false });
     const page = await browser.newPage();
     await page.goto(url);
 
