@@ -1692,7 +1692,27 @@ pify@^2.2.0:
   resolved "https://registry.yarnpkg.com/pify/-/pify-2.3.0.tgz#ed141a6ac043a849ea588498e7dca8b15330e90c"
   integrity sha1-7RQaasBDqEnqWISY59yosVMw6Qw=
 
-playwright@^1.12.3:
+playwright-chromium@1.12.3:
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.12.3.tgz#fd8fe42a83b2bbaf616b01615e412f26cdc65859"
+  integrity sha512-YshYiT/ikEUNGU76lZu4qcfJscERo1257bS1dU1VcBZvz3xNMD2fO25vVOiDEbuYYntLcnj9lW6Qy1UpWSC+VA==
+  dependencies:
+    commander "^6.1.0"
+    debug "^4.1.1"
+    extract-zip "^2.0.1"
+    https-proxy-agent "^5.0.0"
+    jpeg-js "^0.4.2"
+    mime "^2.4.6"
+    pngjs "^5.0.0"
+    progress "^2.0.3"
+    proper-lockfile "^4.1.1"
+    proxy-from-env "^1.1.0"
+    rimraf "^3.0.2"
+    stack-utils "^2.0.3"
+    ws "^7.4.6"
+    yazl "^2.5.1"
+
+playwright@1.12.3:
   version "1.12.3"
   resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.12.3.tgz#113afa2cba10fb56e9a5b307377343e32a155a99"
   integrity sha512-eyhHvZV7dMAUltqjQsgJ9CjZM8dznzN1+rcfCI6W6lfQ7IlPvTFGLuKOCcI4ETbjfbxqaS5FKIkb1WDDzq2Nww==
