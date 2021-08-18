@@ -6,10 +6,10 @@ import { uploadImage } from './upload-image/upload-image';
 (async () => {
     try {
         const { text, imageBuffer } = await getModeratedContent();
-        const imageUrl = await uploadImage(imageBuffer);
+        // const imageUrl = await uploadImage(imageBuffer);
 
-        await sendToTelegram(imageUrl, text);
-        await sendToVK(imageUrl, text);
+        await sendToTelegram(imageBuffer, text);
+        // await sendToVK(imageUrl, text);
     } catch (error) {
         console.log(error);
     }
